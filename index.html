@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>COVID-19 Data</title>
+      
+    <link href="https://unpkg.com/material-components-web@v4.0.0/dist/material-components-web.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/material-components-web@v4.0.0/dist/material-components-web.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <link rel="stylesheet" href="css/style.css" />
+      
+    <link rel="manifest" href="manifest.json" />
+    <!-- ios support -->
+    <link rel="apple-touch-icon" href="images/icons/icon-72x72.png" />
+    <link rel="apple-touch-icon" href="images/icons/icon-96x96.png" />
+    <link rel="apple-touch-icon" href="images/icons/icon-128x128.png" />
+    <link rel="apple-touch-icon" href="images/icons/icon-144x144.png" />
+    <link rel="apple-touch-icon" href="images/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" href="images/icons/icon-384x384.png" />
+    <link rel="apple-touch-icon" href="images/icons/icon-512x512.png" />
+    <meta name="apple-mobile-web-app-status-bar" content="#db4938" />
+    <meta name="theme-color" content="#db4938" />  
+  </head>
+  <body>
+      
+    <!-- Side draw -->
+    <aside class="mdc-drawer mdc-drawer--modal">
+    <div class="mdc-drawer__content">
+      <nav class="mdc-list">
+        <a class="mdc-list-item mdc-list-item--activated" href="#search" aria-current="page">
+          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">search</i>
+          <span class="mdc-list-item__text">Search</span>
+        </a>
+        <a class="mdc-list-item" href="#table">
+          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">view_module</i>
+          <span class="mdc-list-item__text">Table</span>
+        </a>
+        <a class="mdc-list-item" href="#chart">
+          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">trending_up</i>
+          <span class="mdc-list-item__text">Chart</span>
+        </a>
+      </nav>
+    </div>
+    </aside>
+
+    <div class="mdc-drawer-scrim"></div>
+
+    <header class="mdc-top-app-bar">
+        <div class="mdc-top-app-bar__row">
+            <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+                <button class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">menu</button>
+                <span class="mdc-top-app-bar__title">COVID-19 Data</span>
+            </section>
+        </div>
+    </header>
+
+    <main class="mdc-top-app-bar--fixed-adjust">
+        <!-- First Screen -->
+        <div id="search" class="view">
+            <br><form action="/action_page.php" method="get" class="countries">
+                <select id="countries"></select>
+                </form><br>
+            <button class="mdc-button foo-button mdc-button--raised add-country">
+                <div class="mdc-button__ripple"></div>
+                <span class="mdc-button__label">Add Country to List</span>
+            </button>
+            <div class="countries-added"></div>
+            <button class="mdc-button foo-button mdc-button--raised create-data">
+                <div class="mdc-button__ripple"></div>
+                <span class="mdc-button__label">Create Chart</span>
+            </button>
+          </div>
+        <!-- Second Screen -->
+        <div id="table" class="view">
+            <table></table>
+        
+        </div>
+        <!-- Third Screen -->
+        <div id="chart" class="view">About what out you</div>
+    </main>
+     
+    
+
+  <script>
+    mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('header.mdc-top-app-bar'));
+    const drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+
+    document.querySelector(".mdc-top-app-bar__navigation-icon")
+      .addEventListener("click", 
+          (e) => {drawer.open = true;}
+      );
+      
+      document.querySelectorAll('aside.mdc-drawer a.mdc-list-item').forEach(item => {
+          item.addEventListener('click', event => {
+              document.querySelectorAll('div.view').forEach(item1 => {
+                  item1.style.display = "none";
+              })
+              let target = item.getAttribute("href");
+              document.querySelector(target).style.display = "block";
+              drawer.open = false;
+          })
+      })
+      
+      
+      var data;
+      fetch("https://pomber.github.io/covid19/timeseries.json")
+      .then(response => response.json())
+      .then(json => {
+          console.log(json);
+          data = json;
+          
+          //Add key values to data list for user to select from
+          let keys = Object.keys(json);
+          let dList = document.querySelector("#countries");
+          for (let k in keys) {
+              let option = document.createElement('option');
+              option.value = keys[k];
+              option.text = keys[k];
+              dList.append(option);
+          }     
+      });
+      
+      
+      let array = []
+      //Add event listener to button
+      document.querySelector(".add-country").addEventListener("click", 
+          (e) => {
+              let div = document.querySelector(".countries-added");
+              let s = document.querySelector("#countries")
+              let val = s.options[s.selectedIndex].value
+              let allow = true;
+              for(let i in array) {
+                  if (array[i] == val) {
+                      allow = false;
+                      break;
+                  }
+              }
+              if (allow == true) {
+                  array.push(val);
+                  let p = document.createElement("p");
+                  p.textContent = val;
+                  div.append(p);
+              }
+          }
+      );
+      
+      let array_of_arrays = []
+      //Add event listener to button
+      document.querySelector(".create-data").addEventListener("click", 
+          (e) => {
+              let table = document.querySelector("table");    
+              let tr = document.createElement("tr");
+              table.append(tr);
+              let date = document.createElement("th");
+              date.textContent = "Date";
+              tr.append(date);
+              for(let i in array) {
+                  let th = document.createElement("th");
+                  th.textContent = array[i];
+                  tr.append(th);
+                  array_of_arrays.push(data[array[i]]);
+              }
+              for(let j in array_of_arrays[0]) {
+                  let trRow = document.createElement("tr");
+                  table.append(trRow);
+                  let date = document.createElement("td");
+                  date.textContent = array_of_arrays[0][j]["date"];
+                  trRow.append(date);
+                  for (let k in array_of_arrays) {
+                      let td = document.createElement("td");
+                      td.textContent = array_of_arrays[k][j]["confirmed"];
+                      trRow.append(td);
+                  }
+              }
+          }
+      );
+      
+        
+        
+    </script>
+    
+    <script src="js/app.js"></script>
+  </body>
+</html>
