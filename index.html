@@ -76,7 +76,6 @@
           </div>
         <!-- Second Screen -->
         <div id="table" class="view">
-            <table></table>
         
         </div>
         <!-- Third Screen -->
@@ -148,11 +147,16 @@
           }
       );
       
-      let array_of_arrays = []
       //Add event listener to button
       document.querySelector(".create-data").addEventListener("click", 
           (e) => {
-              let table = document.querySelector("table");    
+              let array_of_arrays = []
+              let existing = document.querySelector("table");
+              if (existing) {
+                  existing.remove();
+              }
+              let table = document.createElement("table");   
+              document.querySelector("#table").append(table);
               let tr = document.createElement("tr");
               table.append(tr);
               let date = document.createElement("th");
@@ -176,8 +180,13 @@
                       trRow.append(td);
                   }
               }
+              document.querySelector("#search").style.display = "none";
+              document.querySelector("#table").style.display = "block";
           }
       );
+      
+      //Default open to first screen
+      document.querySelector("#search").style.display = "block";
       
         
         
