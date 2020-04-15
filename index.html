@@ -24,10 +24,30 @@
     <link rel="apple-touch-icon" href="images/icons/icon-512x512.png" />
     <meta name="apple-mobile-web-app-status-bar" content="#db4938" />
     <meta name="theme-color" content="#db4938" />  
+     
+    <!-- Google Line Chart -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+
+      function drawChart(data_arg) {
+        let data = google.visualization.arrayToDataTable(data_arg);
+
+        let options = {
+          title: 'Confirmed Cases of COVID-19 In Each Country',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        let chart = new google.visualization.LineChart(document.getElementById('line-chart'));
+
+        chart.draw(data, options);
+      }
+    </script>
   </head>
   <body>
       
-    <!-- Side draw -->
+    <!-- Side drawer -->
     <aside class="mdc-drawer mdc-drawer--modal">
     <div class="mdc-drawer__content">
       <nav class="mdc-list">
@@ -75,16 +95,15 @@
             </button>
           </div>
         <!-- Second Screen -->
-        <div id="table" class="view">
-        
-        </div>
+        <div id="table" class="view"></div>
         <!-- Third Screen -->
-        <div id="chart" class="view">About what out you</div>
+        <div id="chart" class="view">
+            <div id="line-chart" class="span" style="height:500px"></div>
+        </div>
     </main>
-     
-    
-
-  <script>
+       
+      
+    <script type="text/javascript">
     mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('header.mdc-top-app-bar'));
     const drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
 
@@ -151,6 +170,8 @@
       document.querySelector(".create-data").addEventListener("click", 
           (e) => {
               let array_of_arrays = []
+              let dataset = []
+              let temparray = []
               let existing = document.querySelector("table");
               if (existing) {
                   existing.remove();
@@ -161,27 +182,36 @@
               table.append(tr);
               let date = document.createElement("th");
               date.textContent = "Date";
+              temparray.push("Date");
               tr.append(date);
               for(let i in array) {
                   let th = document.createElement("th");
                   th.textContent = array[i];
+                  temparray.push(array[i]);
                   tr.append(th);
-                  array_of_arrays.push(data[array[i]]);
+                  array_of_arrays.push(data[array[i]]);     
               }
+              dataset.push(temparray);
               for(let j in array_of_arrays[0]) {
+                  let temparray = []
                   let trRow = document.createElement("tr");
                   table.append(trRow);
                   let date = document.createElement("td");
                   date.textContent = array_of_arrays[0][j]["date"];
                   trRow.append(date);
+                  temparray.push(date.textContent);
                   for (let k in array_of_arrays) {
                       let td = document.createElement("td");
                       td.textContent = array_of_arrays[k][j]["confirmed"];
                       trRow.append(td);
+                      temparray.push(parseInt(td.textContent))
                   }
+                  dataset.push(temparray);
               }
               document.querySelector("#search").style.display = "none";
               document.querySelector("#table").style.display = "block";
+              console.log(dataset);
+              drawChart(dataset);
           }
       );
       
