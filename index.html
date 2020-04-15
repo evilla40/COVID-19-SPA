@@ -30,50 +30,41 @@
     <script type="text/javascript">
       google.charts.load('current', {'packages':['corechart']});
 
-      function drawChart(data_arg) {
+      function drawChart(data_arg, val) {
         let data = google.visualization.arrayToDataTable(data_arg);
-
+        let str = ''
+        if (val == 'confirmed') {
+            str = 'Confirmed Cases of COVID-19 In Each Country';
+        }
+        else if (val == 'deaths') {
+            str = 'COVID-19 Deaths In Each Country';
+        }
+        else {
+            str = 'Recovered Cases of COVID-19 In Each Country';
+        }
         let options = {
-          title: 'Confirmed Cases of COVID-19 In Each Country',
+          title: str,
           curveType: 'function',
           legend: { position: 'bottom' }
         };
 
-        let chart = new google.visualization.LineChart(document.getElementById('line-chart'));
+        let chart = new google.visualization.LineChart(document.getElementById('chart'));
 
         chart.draw(data, options);
       }
     </script>
   </head>
   <body>
-      
-    <!-- Side drawer -->
-    <aside class="mdc-drawer mdc-drawer--modal">
-    <div class="mdc-drawer__content">
-      <nav class="mdc-list">
-        <a class="mdc-list-item mdc-list-item--activated" href="#search" aria-current="page">
-          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">search</i>
-          <span class="mdc-list-item__text">Search</span>
-        </a>
-        <a class="mdc-list-item" href="#table">
-          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">view_module</i>
-          <span class="mdc-list-item__text">Table</span>
-        </a>
-        <a class="mdc-list-item" href="#chart">
-          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">trending_up</i>
-          <span class="mdc-list-item__text">Chart</span>
-        </a>
-      </nav>
-    </div>
-    </aside>
-
-    <div class="mdc-drawer-scrim"></div>
 
     <header class="mdc-top-app-bar">
         <div class="mdc-top-app-bar__row">
             <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
-                <button class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">menu</button>
                 <span class="mdc-top-app-bar__title">COVID-19 Data</span>
+            </section>
+            <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
+                <button id="search-button" class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Search">search</button>
+                <button id="table-button" class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Table">view_module</button>
+                <button id="chart-button" class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Chart">trending_up</button>
             </section>
         </div>
     </header>
@@ -81,6 +72,13 @@
     <main class="mdc-top-app-bar--fixed-adjust">
         <!-- First Screen -->
         <div id="search" class="view">
+            <br><form action="" class="data-type">
+                <select id="data-type">
+                   <option value="confirmed" selected="selected">Confirmed</option> 
+                   <option value="deaths">Deaths</option>
+                   <option value="recovered">Recovered</option>
+                </select>
+            </form>
             <br><form action="/action_page.php" method="get" class="countries">
                 <select id="countries"></select>
                 </form><br>
@@ -91,38 +89,54 @@
             <div class="countries-added"></div>
             <button class="mdc-button foo-button mdc-button--raised create-data">
                 <div class="mdc-button__ripple"></div>
-                <span class="mdc-button__label">Create Chart</span>
+                <span class="mdc-button__label">Show Data</span>
             </button>
           </div>
         <!-- Second Screen -->
         <div id="table" class="view"></div>
-        <!-- Third Screen -->
-        <div id="chart" class="view">
-            <div id="line-chart" class="span" style="height:500px"></div>
-        </div>
     </main>
-       
+
       
     <script type="text/javascript">
-    mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('header.mdc-top-app-bar'));
-    const drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
-
-    document.querySelector(".mdc-top-app-bar__navigation-icon")
-      .addEventListener("click", 
-          (e) => {drawer.open = true;}
-      );
-      
-      document.querySelectorAll('aside.mdc-drawer a.mdc-list-item').forEach(item => {
-          item.addEventListener('click', event => {
-              document.querySelectorAll('div.view').forEach(item1 => {
-                  item1.style.display = "none";
-              })
-              let target = item.getAttribute("href");
-              document.querySelector(target).style.display = "block";
-              drawer.open = false;
-          })
-      })
-      
+      mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('header.mdc-top-app-bar'));
+        
+      let ds = null;
+      let title_val = null;
+        
+      //Add event listener to SEARCH button
+      document.querySelector("#search-button").addEventListener("click", 
+          (e) => { 
+              document.querySelector("#search").style.display = "block";
+              document.querySelector("#table").style.display = "none";
+              let exist = document.querySelector("#chart");
+              if (exist) {
+                  exist.remove();
+              }
+      });
+      //Add event listener to TABLE button
+      document.querySelector("#table-button").addEventListener("click", 
+          (e) => { 
+              document.querySelector("#search").style.display = "none";
+              document.querySelector("#table").style.display = "block";
+              let exist = document.querySelector("#chart");
+              if (exist) {
+                  exist.remove();
+              }
+      });
+      //Add event listener to CHART button
+      document.querySelector("#chart-button").addEventListener("click", 
+          (e) => { 
+              document.querySelector("#search").style.display = "none";
+              document.querySelector("#table").style.display = "none";
+              //document.querySelector("#chart").style.display = "block";
+              let div = document.createElement("div");
+              div.setAttribute("id", "chart");
+              div.setAttribute("style", "height: 500px;");
+              document.querySelector("main").append(div);
+              if (ds != null) {
+                  drawChart(ds, title_val);
+              }
+      });
       
       var data;
       fetch("https://pomber.github.io/covid19/timeseries.json")
@@ -172,6 +186,9 @@
               let array_of_arrays = []
               let dataset = []
               let temparray = []
+              let d = document.querySelector("#data-type");
+              let valD = d.options[d.selectedIndex].value;
+              title_val = valD;
               let existing = document.querySelector("table");
               if (existing) {
                   existing.remove();
@@ -202,7 +219,7 @@
                   temparray.push(date.textContent);
                   for (let k in array_of_arrays) {
                       let td = document.createElement("td");
-                      td.textContent = array_of_arrays[k][j]["confirmed"];
+                      td.textContent = array_of_arrays[k][j][valD];
                       trRow.append(td);
                       temparray.push(parseInt(td.textContent))
                   }
@@ -211,17 +228,12 @@
               document.querySelector("#search").style.display = "none";
               document.querySelector("#table").style.display = "block";
               console.log(dataset);
-              drawChart(dataset);
+              ds = dataset;
           }
       );
       
       //Default open to first screen
-      document.querySelector("#search").style.display = "block";
-      
-        
-        
+      document.querySelector("#search").style.display = "block";            
     </script>
-    
-    <script src="js/app.js"></script>
   </body>
 </html>
