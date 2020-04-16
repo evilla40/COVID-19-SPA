@@ -30,18 +30,9 @@
     <script type="text/javascript">
       google.charts.load('current', {'packages':['corechart']});
 
-      function drawChart(data_arg, val) {
+      function drawChart(data_arg, str) {
         let data = google.visualization.arrayToDataTable(data_arg);
-        let str = ''
-        if (val == 'confirmed') {
-            str = 'Confirmed Cases of COVID-19 In Each Country';
-        }
-        else if (val == 'deaths') {
-            str = 'COVID-19 Deaths In Each Country';
-        }
-        else {
-            str = 'Recovered Cases of COVID-19 In Each Country';
-        }
+        
         let options = {
           title: str,
           curveType: 'function',
@@ -188,11 +179,27 @@
               let temparray = []
               let d = document.querySelector("#data-type");
               let valD = d.options[d.selectedIndex].value;
-              title_val = valD;
+              if (valD == 'confirmed') {
+                  title_val = 'Confirmed Cases of COVID-19 In Each Country';
+              }
+              else if (valD == 'deaths') {
+                  title_val = 'COVID-19 Deaths In Each Country';
+              }
+              else {
+                  title_val = 'Recovered Cases of COVID-19 In Each Country';
+              }              
               let existing = document.querySelector("table");
               if (existing) {
                   existing.remove();
               }
+              existing = document.querySelector("p.title");
+              if (existing) {
+                  existing.remove();
+              }
+              let p = document.createElement("p");
+              p.setAttribute("class", "title");
+              p.textContent = title_val;
+              document.querySelector("#table").append(p);
               let table = document.createElement("table");   
               document.querySelector("#table").append(table);
               let tr = document.createElement("tr");
